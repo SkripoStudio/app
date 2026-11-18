@@ -4034,6 +4034,7 @@ SK.app = (function(){
 
   (async function(){
     await SK.store.boot();
+    try{if(location.hash&&location.hash!=='#products')history.replaceState(null,'',location.pathname+location.search)}catch(e){}   // старт всегда с каталога
     window.addEventListener('hashchange',A.onHash);
     A.route();
     if(SK.sync)SK.sync.start();
