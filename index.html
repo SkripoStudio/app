@@ -743,6 +743,10 @@ body.stk-red .stk.out{--stk:#c0504d}
   body[data-page=materials] main,body[data-page=stock] main,body[data-page=orders] main,body[data-page=production] main{padding-top:9px}
   body[data-page=calc] main{margin-top:-19px}
 }
+@media(max-width:700px){
+  .topbar .brand{display:block;height:28px;overflow:hidden}
+  .topbar .brand-logo{height:40px;width:auto}
+}
 </style>
 </head>
 <body>
@@ -3955,9 +3959,9 @@ SK.app = (function(){
     const el=$('#backupstate');if(!el||!SK.S)return;
     const s=S().settings,days=s.lastBackup?Math.floor((Date.now()-s.lastBackup)/864e5):null;
     const hasData=S().materials.length||S().orders.length||S().products.some(p=>p.bom.length);
-    const warn=SK.store.memoryOnly||SK.store.notice||(hasData&&(days==null||days>=14));
+    const warn=SK.store.memoryOnly||(hasData&&(days==null||days>=14));
     el.className=warn?'bad-t':'';
-    el.innerHTML=SK.store.memoryOnly?'⚠ Данные не сохраняются':SK.store.notice?'Есть сообщение о переносе данных':
+    el.innerHTML=SK.store.memoryOnly?'⚠ Данные не сохраняются':
       days==null?(hasData?'Резервной копии ещё не было':''):`Копия ${days?days+' дн. назад':'сегодня'}`;
   };
   A.action({'dismiss-notice':()=>{SK.store.dismissNotice();A.refresh();SK.footerState()}});
