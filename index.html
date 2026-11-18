@@ -747,6 +747,19 @@ body.stk-red .stk.out{--stk:#c0504d}
   .topbar .brand{display:block;height:28px;overflow:hidden}
   .topbar .brand-logo{height:40px;width:auto}
 }
+
+/* стартовая анимация логотипа */
+.splash{position:fixed;inset:0;z-index:100;background:#fff;transition:background-color .5s ease}
+.splash.fade{background-color:rgba(255,255,255,0);pointer-events:none}
+.sp-logo{position:absolute;overflow:hidden}
+.sp-logo img{display:block;width:100%;height:auto}
+.sp-logo{-webkit-mask:linear-gradient(90deg,#000 30%,transparent 70%) 100% 0/300% 100% no-repeat;mask:linear-gradient(90deg,#000 30%,transparent 70%) 100% 0/300% 100% no-repeat}
+.sp-logo.go{animation:spw 2.2s cubic-bezier(.3,.1,.2,1) forwards}
+.sp-logo.fly{-webkit-mask-position:0 0;mask-position:0 0}
+@keyframes spw{to{-webkit-mask-position:0 0;mask-position:0 0}}
+body.sp-on .topbar .brand{visibility:hidden}
+body.sp-on #main,body.sp-on #nav{opacity:0}
+#main,#nav{transition:opacity .6s ease}
 </style>
 </head>
 <body>
@@ -4031,6 +4044,39 @@ SK.app = (function(){
     main.appendChild(l);
   };
   if(main&&window.MutationObserver)new MutationObserver(ensureAddLink).observe(main,{childList:true});
+
+  /* ---- стартовая анимация логотипа (мобильная версия, «Как рукой», вариант А) ---- */
+  (function splash(){
+    try{
+      const small=window.matchMedia&&window.matchMedia('(max-width:700px)').matches;
+      const calm=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+      const last=+localStorage.getItem('skripo_splash')||0;
+      if(!small||calm||Date.now()-last<60000)return;          // не чаще раза в минуту
+      const src=(document.querySelector('.brand-logo')||{}).src;if(!src)return;
+      localStorage.setItem('skripo_splash',String(Date.now()));
+      const ov=document.createElement('div');ov.className='splash';
+      const lg=document.createElement('div');lg.className='sp-logo';
+      const im=document.createElement('img');im.src=src;im.alt='';lg.appendChild(im);ov.appendChild(lg);
+      document.body.classList.add('sp-on');document.body.appendChild(ov);
+      const w=Math.min(window.innerWidth*.56,230),h=w*96.5/357.9;
+      Object.assign(lg.style,{width:w+'px',height:h+'px',left:(window.innerWidth-w)/2+'px',top:(window.innerHeight-h)/2-20+'px'});
+      let done=false,timers=[];
+      const finish=()=>{if(done)return;done=true;timers.forEach(clearTimeout);document.body.classList.remove('sp-on');ov.remove()};
+      const at=(ms,f)=>timers.push(setTimeout(f,ms));
+      requestAnimationFrame(()=>lg.classList.add('go'));
+      at(2300,()=>{
+        const b=document.querySelector('.topbar .brand');if(!b){finish();return}
+        const r=b.getBoundingClientRect();
+        lg.classList.add('fly');
+        lg.animate([{left:lg.style.left,top:lg.style.top,width:lg.style.width,height:lg.style.height},
+                    {left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px'}],
+                   {duration:700,easing:'cubic-bezier(.6,0,.2,1)',fill:'forwards'});
+        ov.classList.add('fade');
+      });
+      at(3050,finish);
+      ov.addEventListener('click',finish);
+    }catch(e){document.body.classList.remove('sp-on')}
+  })();
 
   (async function(){
     await SK.store.boot();
